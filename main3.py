@@ -1,31 +1,28 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 app = FastAPI()
 
-@app.get("/")
-def home():
-    return {"message": "Banking API running"}
-
 persons = [
-    {'account_id': 1, 'name': 'John', 'balance': 400},
-    {'account_id': 2, 'name': 'Swathi', 'balance': 600}
+    {"account_id": 1, "name": "John", "balance": 400},
+    {"account_id": 2, "name": "Swathi", "balance": 600}
 ]
 
-# 1. Get all persons
+@app.get('/persons')
 def get_all_persons():
     return persons
 
 
-# 2. Get person by account id
-def get_person_by_id(account_id):
+@app.get('/person/{account_id}')
+def get_person_by_id(account_id:int):
     for p in persons:
         if p['account_id'] == account_id:
             return p
     return "Account not found"
 
 
-# 3. Get person by name (partial match)
-def get_person_by_name(name):
+@app.get('/person/name/{name}')
+def get_person_by_name(name:str):
     result = []
     for p in persons:
         if name.lower() in p['name'].lower():
@@ -33,28 +30,30 @@ def get_person_by_name(name):
     return result
 
 
-# 4. Credit amount
-def credit(account_id, amount):
+@app.post('/credit')
+async def credit_amount(request: Request):
+    data = await request.json()
     for p in persons:
-        if p['account_id'] == account_id:
-            p['balance'] += amount
+        if p['account_id'] == data['account_id']:
+            p['balance'] += data['amount']
             return p
     return "Account not found"
 
 
-# 5. Withdraw amount
-def withdraw(account_id, amount):
+@app.post('/withdraw')
+async def withdraw_amount(request: Request):
+    data = await request.json()
     for p in persons:
-        if p['account_id'] == account_id:
-            if p['balance'] < amount:
-                return "Insufficient balance"
-            p['balance'] -= amount
+        if p['account_id'] == data['account_id']:
+            # if p['balance'] < amount:
+            #     return "Insufficient balance"
+            p['balance'] -= data['amount']
             return p
     return "Account not found"
 
 
-# 6. Transfer amount
-def transfer(from_acc, to_acc, amount):
+@app.post('/transfer')
+def transfer(from_acc:int, to_acc:int, amount:int):
     sender = None
     receiver = None
 
