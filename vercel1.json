@@ -1,7 +1,7 @@
 {
     "builds": [
       {
-        "src": "main.py",
+        "src": "todo1.py",
         "use": "@vercel/python"
       }
     ],
